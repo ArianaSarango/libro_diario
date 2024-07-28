@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Libro Diario</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Libro Diario</h1>
+    </header>
+
+    <form id="entryForm">
+        <label for="fecha">Fecha:</label>
+        <input type="date" id="fecha" name="fecha" required><br>
+
+        <label for="detalles">Detalles:</label>
+        <input type="text" id="detalles" name="detalles" required><br>
+
+        <label for="comprobante">Comprobante No.:</label>
+        <input type="number" id="comprobante" name="comprobante" required min="1" step="1"><br>
+
+        <label for="ingreso_caja">Ingreso Caja (USD):</label>
+        <input type="number" id="ingreso_caja" name="ingreso_caja" required min="0" step="1"><br>
+
+        <label for="egreso_caja">Egreso Caja (USD):</label>
+        <input type="number" id="egreso_caja" name="egreso_caja" required min="0" step="1"><br>
+
+        <label for="ingreso_banco">Ingreso Banco (USD):</label>
+        <input type="number" id="ingreso_banco" name="ingreso_banco" required min="0" step="1"><br>
+
+        <label for="egreso_banco">Egreso Banco (USD):</label>
+        <input type="number" id="egreso_banco" name="egreso_banco" required min="0" step="1"><br>
+
+        <label for="iva_ingreso">IVA Ingreso (%):</label>
+        <input type="number" id="iva_ingreso" name="iva_ingreso" required min="0" max="100" step="0.01"><br>
+
+        <label for="iva_egreso">IVA Egreso (%):</label>
+        <input type="number" id="iva_egreso" name="iva_egreso" required min="0" max="100" step="0.01"><br>
+
+        <button type="submit">Agregar Entrada</button>
+    </form>
+
+    <table id="entriesTable">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Detalles</th>
+                <th>Comprobante</th>
+                <th>Ingreso Caja (USD)</th>
+                <th>Egreso Caja (USD)</th>
+                <th>Saldo Caja (USD)</th>
+                <th>Ingreso Banco (USD)</th>
+                <th>Egreso Banco (USD)</th>
+                <th>Saldo Banco (USD)</th>
+                <th>IVA Ingreso (%)</th>
+                <th>IVA Egreso (%)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in entries %}
+            <tr>
+                <td>{{ entry.fecha }}</td>
+                <td>{{ entry.detalles }}</td>
+                <td>{{ entry.comprobante }}</td>
+                <td>{{ entry.ingreso_caja }}</td>
+                <td>{{ entry.egreso_caja }}</td>
+                <td>{{ entry.saldo_caja }}</td>
+                <td>{{ entry.ingreso_banco }}</td>
+                <td>{{ entry.egreso_banco }}</td>
+                <td>{{ entry.saldo_banco }}</td>
+                <td>{{ entry.iva_ingreso }}</td>
+                <td>{{ entry.iva_egreso }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
