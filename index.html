@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Libro Diario</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
@@ -59,24 +59,10 @@
             </tr>
         </thead>
         <tbody>
-            {% for entry in entries %}
-            <tr>
-                <td>{{ entry.fecha }}</td>
-                <td>{{ entry.detalles }}</td>
-                <td>{{ entry.comprobante }}</td>
-                <td>{{ entry.ingreso_caja }}</td>
-                <td>{{ entry.egreso_caja }}</td>
-                <td>{{ entry.saldo_caja }}</td>
-                <td>{{ entry.ingreso_banco }}</td>
-                <td>{{ entry.egreso_banco }}</td>
-                <td>{{ entry.saldo_banco }}</td>
-                <td>{{ entry.iva_ingreso }}</td>
-                <td>{{ entry.iva_egreso }}</td>
-            </tr>
-            {% endfor %}
+            <!-- Las entradas se agregarán aquí -->
         </tbody>
     </table>
 
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script src="script.js"></script>
 </body>
 </html>
