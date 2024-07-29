@@ -1,148 +1,214 @@
-document.getElementById("entryForm").addEventListener("submit", function (event) {
-    event.preventDefault();
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('entryForm');
+    const entriesTableBody = document.querySelector('#entriesTable tbody');
+    const searchResultsTableBody = document.querySelector('#searchResultsTable tbody');
+    const searchResultsTableFoot = document.querySelector('#searchResultsTable tfoot');
+    const chartCanvas = document.getElementById('chartCanvas').getContext('2d');
 
-    const formData = new FormData(event.target);
-    const entry = Object.fromEntries(formData.entries());
+    let entries = [];
 
-    // Convertir valores a números con decimales
-    entry.comprobante = parseInt(entry.comprobante, 10);
-    entry.ingreso_caja = parseFloat(entry.ingreso_caja);
-    entry.egreso_caja = parseFloat(entry.egreso_caja);
-    entry.ingreso_banco = parseFloat(entry.ingreso_banco);
-    entry.egreso_banco = parseFloat(entry.egreso_banco);
-    entry.iva_ingreso = parseFloat(entry.iva_ingreso);
-    entry.iva_egreso = parseFloat(entry.iva_egreso);
+    form.addEventListener('submit', (event) => {
+        event.preventDefault();
 
-    // Calcular saldos
-    entry.saldo_caja = (entry.ingreso_caja - entry.egreso_caja).toFixed(2);
-    entry.saldo_banco = (entry.ingreso_banco - entry.egreso_banco).toFixed(2);
+        const fecha = document.getElementById('fecha').value;
+        const detalles = document.getElementById('detalles').value;
+        const comprobante = document.getElementById('comprobante').value;
+        const ingresoCaja = parseFloat(document.getElementById('ingreso_caja').value) || 0;
+        const egresoCaja = parseFloat(document.getElementById('egreso_caja').value) || 0;
+        const ingresoBanco = parseFloat(document.getElementById('ingreso_banco').value) || 0;
+        const egresoBanco = parseFloat(document.getElementById('egreso_banco').value) || 0;
+        const ivaIngreso = parseFloat(document.getElementById('iva_ingreso').value) || 0;
+        const ivaEgreso = parseFloat(document.getElementById('iva_egreso').value) || 0;
 
-    // Insertar en la tabla principal
-    const table = document.getElementById("entriesTable").getElementsByTagName('tbody')[0];
-    const newRow = table.insertRow();
+        const saldoCaja = ingresoCaja - egresoCaja;
+        const saldoBanco = ingresoBanco - egresoBanco;
+        const totalIVAIngreso = (ingresoCaja + ingresoBanco) * (ivaIngreso / 100);
+        const totalIVAegreso = (egresoCaja + egresoBanco) * (ivaEgreso / 100);
 
-    const fields = ["fecha", "detalles", "comprobante", "ingreso_caja", "egreso_caja", "saldo_caja", "ingreso_banco", "egreso_banco", "saldo_banco", "iva_ingreso", "iva_egreso"];
-
-    fields.forEach(field => {
-        const newCell = newRow.insertCell();
-        const newText = document.createTextNode(entry[field]);
-        newCell.appendChild(newText);
-    });
-
-    // Actualizar la tabla PDF
-    const tablePdf = document.getElementById("entriesTablePdf").getElementsByTagName('tbody')[0];
-    const newRowPdf = tablePdf.insertRow();
-
-    fields.forEach(field => {
-        const newCellPdf = newRowPdf.insertCell();
-        const newTextPdf = document.createTextNode(entry[field]);
-        newCellPdf.appendChild(newTextPdf);
-    });
-
-    // Actualizar totales
-    updateTotals();
-
-    event.target.reset();
-});
-
-function updateTotals() {
-    const table = document.getElementById("entriesTable").getElementsByTagName('tbody')[0];
-    const rows = table.getElementsByTagName('tr');
-    
-    let totalIngresoCaja = 0, totalEgresoCaja = 0, totalSaldoCaja = 0;
-    let totalIngresoBanco = 0, totalEgresoBanco = 0, totalSaldoBanco = 0;
-    let totalIVAIngreso = 0, totalIVAegreso = 0;
-    
-    Array.from(rows).forEach(row => {
-        totalIngresoCaja += parseFloat(row.cells[3].textContent || 0);
-        totalEgresoCaja += parseFloat(row.cells[4].textContent || 0);
-        totalSaldoCaja += parseFloat(row.cells[5].textContent || 0);
-        totalIngresoBanco += parseFloat(row.cells[6].textContent || 0);
-        totalEgresoBanco += parseFloat(row.cells[7].textContent || 0);
-        totalSaldoBanco += parseFloat(row.cells[8].textContent || 0);
-        totalIVAIngreso += parseFloat(row.cells[9].textContent || 0);
-        totalIVAegreso += parseFloat(row.cells[10].textContent || 0);
-    });
-
-    document.getElementById("totalIngresoCaja").textContent = totalIngresoCaja.toFixed(2);
-    document.getElementById("totalEgresoCaja").textContent = totalEgresoCaja.toFixed(2);
-    document.getElementById("totalSaldoCaja").textContent = totalSaldoCaja.toFixed(2);
-    document.getElementById("totalIngresoBanco").textContent = totalIngresoBanco.toFixed(2);
-    document.getElementById("totalEgresoBanco").textContent = totalEgresoBanco.toFixed(2);
-    document.getElementById("totalSaldoBanco").textContent = totalSaldoBanco.toFixed(2);
-    document.getElementById("totalIVAIngreso").textContent = (totalIngresoCaja * totalIVAIngreso / 100).toFixed(2);
-    document.getElementById("totalIVAegreso").textContent = (totalEgresoCaja * totalIVAegreso / 100).toFixed(2);
-
-    // Actualizar la tabla de resultados de búsqueda
-    document.getElementById("totalIngresoCajaPdf").textContent = totalIngresoCaja.toFixed(2);
-    document.getElementById("totalEgresoCajaPdf").textContent = totalEgresoCaja.toFixed(2);
-    document.getElementById("totalSaldoCajaPdf").textContent = totalSaldoCaja.toFixed(2);
-    document.getElementById("totalIngresoBancoPdf").textContent = totalIngresoBanco.toFixed(2);
-    document.getElementById("totalEgresoBancoPdf").textContent = totalEgresoBanco.toFixed(2);
-    document.getElementById("totalSaldoBancoPdf").textContent = totalSaldoBanco.toFixed(2);
-    document.getElementById("totalIVAIngresoPdf").textContent = (totalIngresoCaja * totalIVAIngreso / 100).toFixed(2);
-    document.getElementById("totalIVAegresoPdf").textContent = (totalEgresoCaja * totalIVAegreso / 100).toFixed(2);
-}
-
-document.getElementById('saveData').addEventListener('click', () => {
-    // Guardar datos en el localStorage
-    const table = document.getElementById("entriesTable").getElementsByTagName('tbody')[0];
-    const rows = table.getElementsByTagName('tr');
-    const data = Array.from(rows).map(row => {
-        return Array.from(row.getElementsByTagName('td')).map(td => td.textContent);
-    });
-    localStorage.setItem('entries', JSON.stringify(data));
-});
-
-document.getElementById('searchButton').addEventListener('click', () => {
-    document.getElementById('searchContainer').style.display = 'block';
-});
-
-document.getElementById('searchData').addEventListener('click', () => {
-    const searchDate = document.getElementById('searchDate').value;
-    const data = JSON.parse(localStorage.getItem('entries') || '[]');
-    const filteredData = data.filter(row => row[0] === searchDate);
-
-    const searchResultsTable = document.getElementById('searchResultsTable').getElementsByTagName('tbody')[0];
-    searchResultsTable.innerHTML = ''; // Limpiar resultados anteriores
-
-    filteredData.forEach(row => {
-        const newRow = searchResultsTable.insertRow();
-        row.forEach(cell => {
-            const newCell = newRow.insertCell();
-            const newText = document.createTextNode(cell);
-            newCell.appendChild(newText);
+        entries.push({
+            fecha,
+            detalles,
+            comprobante,
+            ingresoCaja,
+            egresoCaja,
+            saldoCaja,
+            ingresoBanco,
+            egresoBanco,
+            saldoBanco,
+            ivaIngreso,
+            ivaEgreso,
+            totalIVAIngreso,
+            totalIVAegreso
         });
+
+        updateTables();
+        updateChart();
     });
 
-    // Actualizar totales en resultados de búsqueda
-    updateTotals();
+    document.getElementById('searchButton').addEventListener('click', () => {
+        document.getElementById('searchContainer').style.display = 'block';
+    });
 
-    document.getElementById('searchResults').style.display = 'block';
-});
+    document.getElementById('searchData').addEventListener('click', () => {
+        const searchDate = document.getElementById('searchDate').value;
+        const filteredEntries = entries.filter(entry => entry.fecha === searchDate);
 
-document.getElementById('printResults').addEventListener('click', () => {
-    const printContent = document.getElementById('searchResults').innerHTML;
-    const printWindow = window.open('', '', 'height=600,width=800');
-    printWindow.document.write('<html><head><title>Resultados de la Búsqueda</title>');
-    printWindow.document.write('</head><body >');
-    printWindow.document.write(printContent);
-    printWindow.document.write('</body></html>');
-    printWindow.document.close();
-    printWindow.print();
-});
+        searchResultsTableBody.innerHTML = '';
+        searchResultsTableFoot.querySelector('#totalIngresoCaja').textContent = '0.00';
+        searchResultsTableFoot.querySelector('#totalEgresoCaja').textContent = '0.00';
+        searchResultsTableFoot.querySelector('#totalSaldoCaja').textContent = '0.00';
+        searchResultsTableFoot.querySelector('#totalIngresoBanco').textContent = '0.00';
+        searchResultsTableFoot.querySelector('#totalEgresoBanco').textContent = '0.00';
+        searchResultsTableFoot.querySelector('#totalSaldoBanco').textContent = '0.00';
+        searchResultsTableFoot.querySelector('#totalIVAIngreso').textContent = '0.00';
+        searchResultsTableFoot.querySelector('#totalIVAegreso').textContent = '0.00';
 
-document.getElementById('downloadPdf').addEventListener('click', () => {
-    const element = document.getElementById('pdfContent');
-    element.style.display = 'block';
-    var opt = {
-        margin:       [0.5, 0.5, 0.5, 0.5],
-        filename:     'LibroDiario.pdf',
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 3, useCORS: true },
-        jsPDF:        { unit: 'in', format: 'a3', orientation: 'landscape' }
-    };
-    html2pdf().from(element).set(opt).save().then(() => {
-        element.style.display = 'none';
+        filteredEntries.forEach(entry => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${entry.fecha}</td>
+                <td>${entry.detalles}</td>
+                <td>${entry.comprobante}</td>
+                <td>${entry.ingresoCaja.toFixed(2)}</td>
+                <td>${entry.egresoCaja.toFixed(2)}</td>
+                <td>${entry.saldoCaja.toFixed(2)}</td>
+                <td>${entry.ingresoBanco.toFixed(2)}</td>
+                <td>${entry.egresoBanco.toFixed(2)}</td>
+                <td>${entry.saldoBanco.toFixed(2)}</td>
+                <td>${entry.ivaIngreso.toFixed(2)}</td>
+                <td>${entry.ivaEgreso.toFixed(2)}</td>
+                <td>${entry.totalIVAIngreso.toFixed(2)}</td>
+                <td>${entry.totalIVAegreso.toFixed(2)}</td>
+            `;
+            searchResultsTableBody.appendChild(row);
+        });
+
+        updateSearchResultsTotals(filteredEntries);
+    });
+
+    function updateTables() {
+        entriesTableBody.innerHTML = '';
+        entries.forEach(entry => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${entry.fecha}</td>
+                <td>${entry.detalles}</td>
+                <td>${entry.comprobante}</td>
+                <td>${entry.ingresoCaja.toFixed(2)}</td>
+                <td>${entry.egresoCaja.toFixed(2)}</td>
+                <td>${entry.saldoCaja.toFixed(2)}</td>
+                <td>${entry.ingresoBanco.toFixed(2)}</td>
+                <td>${entry.egresoBanco.toFixed(2)}</td>
+                <td>${entry.saldoBanco.toFixed(2)}</td>
+                <td>${entry.ivaIngreso.toFixed(2)}</td>
+                <td>${entry.ivaEgreso.toFixed(2)}</td>
+                <td>${entry.totalIVAIngreso.toFixed(2)}</td>
+                <td>${entry.totalIVAegreso.toFixed(2)}</td>
+            `;
+            entriesTableBody.appendChild(row);
+        });
+
+        updateTotals();
+    }
+
+    function updateTotals() {
+        const totalIngresoCaja = entries.reduce((acc, entry) => acc + entry.ingresoCaja, 0);
+        const totalEgresoCaja = entries.reduce((acc, entry) => acc + entry.egresoCaja, 0);
+        const totalSaldoCaja = totalIngresoCaja - totalEgresoCaja;
+        const totalIngresoBanco = entries.reduce((acc, entry) => acc + entry.ingresoBanco, 0);
+        const totalEgresoBanco = entries.reduce((acc, entry) => acc + entry.egresoBanco, 0);
+        const totalSaldoBanco = totalIngresoBanco - totalEgresoBanco;
+        const totalIVAIngreso = entries.reduce((acc, entry) => acc + entry.totalIVAIngreso, 0);
+        const totalIVAegreso = entries.reduce((acc, entry) => acc + entry.totalIVAegreso, 0);
+
+        document.getElementById('totalIngresoCaja').textContent = totalIngresoCaja.toFixed(2);
+        document.getElementById('totalEgresoCaja').textContent = totalEgresoCaja.toFixed(2);
+        document.getElementById('totalSaldoCaja').textContent = totalSaldoCaja.toFixed(2);
+        document.getElementById('totalIngresoBanco').textContent = totalIngresoBanco.toFixed(2);
+        document.getElementById('totalEgresoBanco').textContent = totalEgresoBanco.toFixed(2);
+        document.getElementById('totalSaldoBanco').textContent = totalSaldoBanco.toFixed(2);
+        document.getElementById('totalIVAIngreso').textContent = totalIVAIngreso.toFixed(2);
+        document.getElementById('totalIVAegreso').textContent = totalIVAegreso.toFixed(2);
+    }
+
+    function updateSearchResultsTotals(filteredEntries) {
+        const totalIngresoCaja = filteredEntries.reduce((acc, entry) => acc + entry.ingresoCaja, 0);
+        const totalEgresoCaja = filteredEntries.reduce((acc, entry) => acc + entry.egresoCaja, 0);
+        const totalSaldoCaja = totalIngresoCaja - totalEgresoCaja;
+        const totalIngresoBanco = filteredEntries.reduce((acc, entry) => acc + entry.ingresoBanco, 0);
+        const totalEgresoBanco = filteredEntries.reduce((acc, entry) => acc + entry.egresoBanco, 0);
+        const totalSaldoBanco = totalIngresoBanco - totalEgresoBanco;
+        const totalIVAIngreso = filteredEntries.reduce((acc, entry) => acc + entry.totalIVAIngreso, 0);
+        const totalIVAegreso = filteredEntries.reduce((acc, entry) => acc + entry.totalIVAegreso, 0);
+
+        searchResultsTableFoot.querySelector('#totalIngresoCaja').textContent = totalIngresoCaja.toFixed(2);
+        searchResultsTableFoot.querySelector('#totalEgresoCaja').textContent = totalEgresoCaja.toFixed(2);
+        searchResultsTableFoot.querySelector('#totalSaldoCaja').textContent = totalSaldoCaja.toFixed(2);
+        searchResultsTableFoot.querySelector('#totalIngresoBanco').textContent = totalIngresoBanco.toFixed(2);
+        searchResultsTableFoot.querySelector('#totalEgresoBanco').textContent = totalEgresoBanco.toFixed(2);
+        searchResultsTableFoot.querySelector('#totalSaldoBanco').textContent = totalSaldoBanco.toFixed(2);
+        searchResultsTableFoot.querySelector('#totalIVAIngreso').textContent = totalIVAIngreso.toFixed(2);
+        searchResultsTableFoot.querySelector('#totalIVAegreso').textContent = totalIVAegreso.toFixed(2);
+    }
+
+    function updateChart() {
+        const ingresos = entries.reduce((acc, entry) => acc + entry.ingresoCaja + entry.ingresoBanco, 0);
+        const egresos = entries.reduce((acc, entry) => acc + entry.egresoCaja + entry.egresoBanco, 0);
+        const saldo = ingresos - egresos;
+
+        new Chart(chartCanvas, {
+            type: 'bar',
+            data: {
+                labels: ['Ingresos', 'Egresos', 'Saldo'],
+                datasets: [{
+                    label: 'Monto (USD)',
+                    data: [ingresos, egresos, saldo],
+                    backgroundColor: [
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(75, 192, 192, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(75, 192, 192, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+    document.getElementById('saveData').addEventListener('click', () => {
+        const dataStr = JSON.stringify(entries);
+        const blob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'entries.json';
+        a.click();
+        URL.revokeObjectURL(url);
+    });
+
+    document.getElementById('printResults').addEventListener('click', () => {
+        const printWindow = window.open('', '', 'height=600,width=800');
+        printWindow.document.write('<html><head><title>Resultados de Búsqueda</title>');
+        printWindow.document.write('</head><body >');
+        printWindow.document.write(document.getElementById('searchResults').innerHTML);
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        printWindow.print();
+    });
+
+    document.getElementById('downloadPdf').addEventListener('click', () => {
+        const element = document.getElementById('pdfContent');
+        html2pdf().from(element).save('LibroDiario.pdf');
     });
 });
