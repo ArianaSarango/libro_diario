@@ -1,0 +1,116 @@
+/* Estilos generales del cuerpo */
+body {
+    font-family: "Arial Rounded MT Bold";
+    background-color: #def9fb;
+    color: #000000;
+}
+
+/* Encabezado de la página */
+header {
+    background-color: #000; /* Encabezado */
+    color: #fff; /* Libro Diario */
+    padding: 20px;
+    text-align: center;
+}
+
+h1 {
+    margin: 0;
+}
+
+/* Estilo del formulario */
+form {
+    margin: 20px;
+    padding: 20px;
+    background-color: #fff; /* Fondo centro */
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+}
+
+input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc; /* Contorno especificaciones */
+    border-radius: 4px;
+}
+
+form button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    background-color: #4682b4; /* Botón principal */
+    color: white; /* Color del texto */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+form button:hover {
+    background-color: #5a9bd4; /* Botón principal hover */
+}
+
+/* Estilo de la tabla */
+table {
+    width: 100%;
+    margin: 20px 0;
+    border-collapse: collapse;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+}
+
+th, td {
+    padding: 10px;
+    text-align: center;
+}
+
+th {
+    background-color: #4682b4; /* Encabezado de tabla */
+    color: white;
+}
+
+tr:nth-child(even) {
+    background-color: #cff7fb; /* Fondo alternado de filas */
+}
+
+/* Estilo del botón de descarga de PDF */
+#downloadPdf {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #4682b4; /* Botón PDF */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#downloadPdf:hover {
+    background-color: #5a9bd4; /* Botón PDF hover */
+}
+
+/* Estilo para el contenido del PDF */
+#pdfContent {
+    display: block;
+    width: 100%;
+}
+
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #pdfContent, #pdfContent * {
+        visibility: visible;
+    }
+    #pdfContent {
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+}
